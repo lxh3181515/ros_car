@@ -11,7 +11,7 @@ BaseControl::BaseControl(NodeHandle n)
     ID = 0x01;
     device_port.data = "/dev/ttyTHS1";
     baudrate = 115200;
-    serial::Timeout to = serial::Timeout::simpleTimeout(100);
+    serial::Timeout to = serial::Timeout::simpleTimeout(10);
     sp.setPort(device_port.data);
     sp.setBaudrate(baudrate);
     sp.setTimeout(to);
@@ -146,12 +146,12 @@ void BaseControl::timerCommunicationCB(const TimerEvent& event)
                         ROS_WARN("velocity set failed!");
                         break;
                     case FC_REP_VEL:
-                        info_vel_ack.linear.x = float(uint16_t(databuf[4])<<8 + databuf[5]);
-                        info_vel_ack.linear.y = float(uint16_t(databuf[6])<<8 + databuf[7]);
-                        info_vel_ack.angular.z = float(uint16_t(databuf[8])<<8 + databuf[9]);
+                        info_vel_ack.linear.x = float((uint16_t(databuf[4])<<8) + databuf[5]) / 1000.0;
+                        info_vel_ack.linear.y = float((uint16_t(databuf[6])<<8) + databuf[7]) / 1000.0;
+                        info_vel_ack.angular.z = float((uint16_t(databuf[8])<<8) + databuf[9]) / 1000.0;
                         break;
                     case FC_REP_YAW:
-                        yaw = float(uint16_t(databuf[8])<<8 + databuf[9]);
+                        yaw = float((uint16_t(databuf[8])<<8) + databuf[9]) / 100.0;
                         break;
                     case FC_REP_IMU:
                         // info_imu_raw.angular_velocity.x = ((databuf[4]&0xff)<<24)|((databuf[5]&0xff)<<16)|((databuf[6]&0xff)<<8)|(databuf[7]&0xff);
