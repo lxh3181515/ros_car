@@ -10,19 +10,22 @@
 #include "queue.h"
 #include "nav_msgs/Odometry.h"
 #include "tf/tf.h"
+#include "tf/transform_broadcaster.h"
 
 using namespace ros;
 using namespace std_msgs;
 
+#define PI 3.14159265
 
 class BaseControl
 {
 private:
     // get param
     uint8_t ID; 
-    String odomID;
-    String baseID;
-    String device_port;
+    std::string odomID;
+    std::string baseID;
+    std::string imuID;
+    std::string device_port;
     uint32_t baudrate;
     uint16_t odom_freq;
     uint16_t imu_freq;
@@ -43,6 +46,8 @@ private:
     queue Circleloop;
     Timer timer_communication;
     Timer timer_odom;
+    Timer timer_imu;
+    tf::TransformBroadcaster tf_broadcaster;
 
 public:
     BaseControl(NodeHandle n);
@@ -53,6 +58,7 @@ public:
     
     void timerCommunicationCB(const TimerEvent& event);
     void timerOdomCB(const TimerEvent& event);
+    void timerIMUCB(const TimerEvent& event);
 };
 
 
