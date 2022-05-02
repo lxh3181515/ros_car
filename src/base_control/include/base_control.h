@@ -59,6 +59,8 @@ public:
     void timerCommunicationCB(const TimerEvent& event);
     void timerOdomCB(const TimerEvent& event);
     void timerIMUCB(const TimerEvent& event);
+
+    void getInfo();
 };
 
 

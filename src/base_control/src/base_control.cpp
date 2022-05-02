@@ -4,7 +4,7 @@
 BaseControl::BaseControl(NodeHandle n)
 {
     /* topic init */
-    odom_topic = n.advertise<geometry_msgs::Twist>("/odom", 10);
+    odom_topic = n.advertise<nav_msgs::Odometry>("/odom", 10);
     imu_topic = n.advertise<sensor_msgs::Imu>("/imu", 10);
     /* serial init */
     ID = 0x01;
@@ -35,7 +35,25 @@ BaseControl::BaseControl(NodeHandle n)
     /* timer init */
     timer_communication = n.createTimer(Duration(1.0/500), &BaseControl::timerCommunicationCB, this);
     timer_odom = n.createTimer(Duration(1.0/odom_freq), &BaseControl::timerOdomCB, this);
-    timer_imu = n.createTimer(Duration(1.0/imu_freq), &BaseControl::timerIMUCB, this);
+    // timer_imu = n.createTimer(Duration(1.0/imu_freq), &BaseControl::timerIMUCB, this);
+    /* wait for imu init - 2s */
+    getInfo();
+    ROS_INFO("init done.");
+}
+
+void BaseControl::getInfo()
+{
+    while(serialIDLE_flag)
+    {
+        Duration(0.01).sleep();
+    }
+    serialIDLE_flag = 1;
+    serialSend(FC_GET_VERSION);
+    Duration(0.01).sleep();
+    serialSend(FC_GET_SN);
+    Duration(0.01).sleep();
+    serialSend(FC_GET_CHASIS_INFO);
+    serialIDLE_flag = 0;
 }
 
 
@@ -58,7 +76,6 @@ uint8_t BaseControl::crc8_MAXIM(uint8_t *data, uint8_t len)
     }
     return crc;
 }
-
 
 void BaseControl::serialSend(uint8_t fc, uint8_t *data, uint8_t len)
 {
@@ -104,7 +121,6 @@ void BaseControl::serialSend(uint8_t fc)
         ROS_ERROR("serial send failed");
     }
 }
-
 
 void BaseControl::timerCommunicationCB(const TimerEvent& event)
 {
@@ -153,6 +169,7 @@ void BaseControl::timerCommunicationCB(const TimerEvent& event)
                     //     break;
                     // case FC_REP_YAW:
                     //     yaw = float((uint16_t(databuf[8])<<8) + databuf[9]) / 100.0;
+                    //     yaw = yaw * PI / 180.0;
                     //     break;
                     case FC_REP_IMU:
                         info_imu_raw.angular_velocity.x = double((((databuf[4]&0xff)<<24)|((databuf[5]&0xff)<<16)|((databuf[6]&0xff)<<8)|(databuf[7]&0xff))/100000.0);
@@ -168,11 +185,14 @@ void BaseControl::timerCommunicationCB(const TimerEvent& event)
                         info_imu_raw.orientation.z = double(((databuf[32]&0xff)<<8|databuf[33])/10000.0);
                         info_imu_raw.orientation.w = double(((databuf[34]&0xff)<<8|databuf[35])/10000.0);
                         break;
-                    case FC_REP_ODOM:
+                    case FC_REP_ODOM_EX:
+                        ROS_INFO("%d %d", databuf[8], databuf[9]);
                         info_vel_ack.linear.x = float((uint16_t(databuf[4])<<8) + databuf[5]) / 1000.0;
-                        yaw = float((uint16_t(databuf[6])<<8) + databuf[7]) / 100.0;
+                        info_vel_ack.linear.y = float((uint16_t(databuf[6])<<8) + databuf[7]) / 1000.0;
+                        yaw = float((uint16_t(databuf[8])<<8) + databuf[9]) / 100.0;
                         yaw = yaw * PI / 180.0;
-                        info_vel_ack.angular.z = float((uint16_t(databuf[8])<<8) + databuf[9]) / 1000.0;
+                        info_vel_ack.angular.z = float((uint16_t(databuf[10])<<8) + databuf[11]) / 1000.0;
+                        ROS_INFO("yaw=%.2f", yaw);
                         break;
                     default:
                         break;
@@ -197,14 +217,12 @@ void BaseControl::timerOdomCB(const TimerEvent& event)
         Duration(0.01).sleep();
     }
     serialIDLE_flag = 1;
-    // serialSend(FC_GET_YAW);
-    // serialSend(FC_GET_VEL);
-    serialSend(FC_GET_ODOM);
+    serialSend(FC_GET_ODOM_EX);
     serialIDLE_flag = 0;
 
     /* publish odom data */
     tf::Transform trans;
-    current_time = Time::now();
+    current_time = Time::now();Duration(0.01).sleep();
     double dt = (current_time - previous_time).toSec();
     previous_time = current_time;
     info_odom.header.stamp = current_time;
@@ -227,7 +245,6 @@ void BaseControl::timerOdomCB(const TimerEvent& event)
     odom_topic.publish(info_odom);
     tf_broadcaster.sendTransform(tf::StampedTransform(trans, current_time, baseID, odomID));
 }
-
 
 void BaseControl::timerIMUCB(const TimerEvent& event)
 {
