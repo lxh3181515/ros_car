@@ -35,7 +35,7 @@ BaseControl::BaseControl(NodeHandle n)
     /* timer init */
     timer_communication = n.createTimer(Duration(1.0/500), &BaseControl::timerCommunicationCB, this);
     timer_odom = n.createTimer(Duration(1.0/odom_freq), &BaseControl::timerOdomCB, this);
-    // timer_imu = n.createTimer(Duration(1.0/imu_freq), &BaseControl::timerIMUCB, this);
+    timer_imu = n.createTimer(Duration(1.0/imu_freq), &BaseControl::timerIMUCB, this);
     /* wait for imu init - 2s */
     getInfo();
     ROS_INFO("init done.");
@@ -124,16 +124,17 @@ void BaseControl::serialSend(uint8_t fc)
 
 void BaseControl::timerCommunicationCB(const TimerEvent& event)
 {
+    // ROS_INFO("queue len = %d", Circleloop.get_queue_length());
     /* read data */
     if (sp.available())
     {
         int len;
         std::string buff;
-        buff = sp.read();
+        buff = sp.read(sp.available());
         len = buff.size();
         for (int i = 0; i < len; i++)
         {
-            if (!Circleloop.enqueue((uint8_t)buff[i])) break; // ---check it out---
+            Circleloop.enqueue(buff[i]);
         }
     }
     /* handle data */
@@ -157,45 +158,29 @@ void BaseControl::timerCommunicationCB(const TimerEvent& event)
                     ROS_WARN("crc check failed");
                 }
                 // function code
-                switch(databuf[3])
+                if (databuf[3] == FC_REP_IMU)
                 {
-                    case FC_REP_SET_VEL:
-                        ROS_WARN("velocity set failed!");
-                        break;
-                    // case FC_REP_VEL:
-                    //     info_vel_ack.linear.x = float((uint16_t(databuf[4])<<8) + databuf[5]) / 1000.0;
-                    //     info_vel_ack.linear.y = float((uint16_t(databuf[6])<<8) + databuf[7]) / 1000.0;
-                    //     info_vel_ack.angular.z = float((uint16_t(databuf[8])<<8) + databuf[9]) / 1000.0;
-                    //     break;
-                    // case FC_REP_YAW:
-                    //     yaw = float((uint16_t(databuf[8])<<8) + databuf[9]) / 100.0;
-                    //     yaw = yaw * PI / 180.0;
-                    //     break;
-                    case FC_REP_IMU:
-                        info_imu_raw.angular_velocity.x = double((((databuf[4]&0xff)<<24)|((databuf[5]&0xff)<<16)|((databuf[6]&0xff)<<8)|(databuf[7]&0xff))/100000.0);
-                        info_imu_raw.angular_velocity.y = double((((databuf[8]&0xff)<<24)|((databuf[9]&0xff)<<16)|((databuf[10]&0xff)<<8)|(databuf[11]&0xff))/100000.0);
-                        info_imu_raw.angular_velocity.z = double((((databuf[12]&0xff)<<24)|((databuf[13]&0xff)<<16)|((databuf[14]&0xff)<<8)|(databuf[15]&0xff))/100000.0);
-                        
-                        info_imu_raw.linear_acceleration.x = double((((databuf[16]&0xff)<<24)|((databuf[17]&0xff)<<16)|((databuf[18]&0xff)<<8)|(databuf[19]&0xff))/100000.0);
-                        info_imu_raw.linear_acceleration.y = double((((databuf[20]&0xff)<<24)|((databuf[21]&0xff)<<16)|((databuf[22]&0xff)<<8)|(databuf[23]&0xff))/100000.0);
-                        info_imu_raw.linear_acceleration.z = double((((databuf[24]&0xff)<<24)|((databuf[25]&0xff)<<16)|((databuf[26]&0xff)<<8)|(databuf[27]&0xff))/100000.0);
-                        
-                        info_imu_raw.orientation.x = double(((databuf[28]&0xff)<<8|databuf[29])/10000.0);
-                        info_imu_raw.orientation.y = double(((databuf[30]&0xff)<<8|databuf[31])/10000.0);
-                        info_imu_raw.orientation.z = double(((databuf[32]&0xff)<<8|databuf[33])/10000.0);
-                        info_imu_raw.orientation.w = double(((databuf[34]&0xff)<<8|databuf[35])/10000.0);
-                        break;
-                    case FC_REP_ODOM_EX:
-                        ROS_INFO("%d %d", databuf[8], databuf[9]);
-                        info_vel_ack.linear.x = float((uint16_t(databuf[4])<<8) + databuf[5]) / 1000.0;
-                        info_vel_ack.linear.y = float((uint16_t(databuf[6])<<8) + databuf[7]) / 1000.0;
-                        yaw = float((uint16_t(databuf[8])<<8) + databuf[9]) / 100.0;
-                        yaw = yaw * PI / 180.0;
-                        info_vel_ack.angular.z = float((uint16_t(databuf[10])<<8) + databuf[11]) / 1000.0;
-                        ROS_INFO("yaw=%.2f", yaw);
-                        break;
-                    default:
-                        break;
+                    temp_info_imu_raw.angular_velocity.x = (((databuf[4]&0xff)<<24)|((databuf[5]&0xff)<<16)|((databuf[6]&0xff)<<8)|(databuf[7]&0xff));
+                    temp_info_imu_raw.angular_velocity.y = (((databuf[8]&0xff)<<24)|((databuf[9]&0xff)<<16)|((databuf[10]&0xff)<<8)|(databuf[11]&0xff));
+                    temp_info_imu_raw.angular_velocity.z = (((databuf[12]&0xff)<<24)|((databuf[13]&0xff)<<16)|((databuf[14]&0xff)<<8)|(databuf[15]&0xff));
+                    
+                    temp_info_imu_raw.linear_acceleration.x = (((databuf[16]&0xff)<<24)|((databuf[17]&0xff)<<16)|((databuf[18]&0xff)<<8)|(databuf[19]&0xff));
+                    temp_info_imu_raw.linear_acceleration.y = (((databuf[20]&0xff)<<24)|((databuf[21]&0xff)<<16)|((databuf[22]&0xff)<<8)|(databuf[23]&0xff));
+                    temp_info_imu_raw.linear_acceleration.z = (((databuf[24]&0xff)<<24)|((databuf[25]&0xff)<<16)|((databuf[26]&0xff)<<8)|(databuf[27]&0xff));
+                    
+                    temp_info_imu_raw.orientation.x = ((databuf[28]&0xff)<<8|databuf[29]);
+                    temp_info_imu_raw.orientation.y = ((databuf[30]&0xff)<<8|databuf[31]);
+                    temp_info_imu_raw.orientation.z = ((databuf[32]&0xff)<<8|databuf[33]);
+                    temp_info_imu_raw.orientation.w = ((databuf[34]&0xff)<<8|databuf[35]);
+                } else if (databuf[3] == FC_REP_ODOM_EX)
+                {
+                    temp_info_vel_ack.linear.x = ((databuf[4]&0xff)<<8|databuf[5]);
+                    temp_info_vel_ack.linear.y = ((databuf[6]&0xff)<<8|databuf[7]);
+                    temp_yaw = ((databuf[8]&0xff)<<8|databuf[9]);
+                    temp_info_vel_ack.angular.z = ((databuf[10]&0xff)<<8|databuf[11]);
+                } else if (databuf[3] == FC_REP_SET_VEL)
+                {
+                    ROS_WARN("velocity set failed!");
                 }
             }
             
@@ -230,6 +215,11 @@ void BaseControl::timerOdomCB(const TimerEvent& event)
     info_odom.child_frame_id = baseID;
 
     // cal odom data
+    info_vel_ack.linear.x = temp_info_vel_ack.linear.x / 1000.0;
+    info_vel_ack.linear.y = temp_info_vel_ack.linear.y / 1000.0;
+    info_vel_ack.angular.z = temp_info_vel_ack.angular.z / 1000.0;
+    yaw = temp_yaw * PI / 18000.0;
+
     info_odom.pose.pose.position.x += info_vel_ack.linear.x * cos(yaw) * dt - info_vel_ack.linear.y * sin(yaw) * dt;
     info_odom.pose.pose.position.y += info_vel_ack.linear.x * sin(yaw) * dt + info_vel_ack.linear.y * cos(yaw) * dt;
     info_odom.pose.pose.position.z = 0;
@@ -258,6 +248,17 @@ void BaseControl::timerIMUCB(const TimerEvent& event)
     serialIDLE_flag = 0;
 
     /* publish IMU data */
+    info_imu_raw.angular_velocity.x = temp_info_imu_raw.angular_velocity.x / 100000.0;
+    info_imu_raw.angular_velocity.y = temp_info_imu_raw.angular_velocity.y / 100000.0;
+    info_imu_raw.angular_velocity.z = temp_info_imu_raw.angular_velocity.z / 100000.0;
+    info_imu_raw.linear_acceleration.x = temp_info_imu_raw.linear_acceleration.x / 100000.0;
+    info_imu_raw.linear_acceleration.y = temp_info_imu_raw.linear_acceleration.y / 100000.0;
+    info_imu_raw.linear_acceleration.z = temp_info_imu_raw.linear_acceleration.z / 100000.0;
+    info_imu_raw.orientation.x = temp_info_imu_raw.orientation.x / 10000.0;
+    info_imu_raw.orientation.y = temp_info_imu_raw.orientation.y / 10000.0;
+    info_imu_raw.orientation.z = temp_info_imu_raw.orientation.z / 10000.0;
+    info_imu_raw.orientation.w = temp_info_imu_raw.orientation.w / 10000.0;
+
     current_time = Time::now();
     info_imu_raw.header.stamp = current_time;
     info_imu_raw.header.frame_id = imuID;

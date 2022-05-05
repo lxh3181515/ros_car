@@ -37,10 +37,12 @@ private:
     Time current_time = Time::now();
     Time previous_time = current_time;
     geometry_msgs::Twist info_vel_ack;
+    geometry_msgs::Twist temp_info_vel_ack;
     geometry_msgs::Twist cmd_vel_ack;
     nav_msgs::Odometry info_odom;
     sensor_msgs::Imu info_imu_raw;
-    float yaw;
+    sensor_msgs::Imu temp_info_imu_raw;
+    float yaw, temp_yaw;
     serial::Serial sp;
     uint8_t serialIDLE_flag;
     queue Circleloop;
