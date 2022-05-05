@@ -1,11 +1,12 @@
+#!/usr/bin/python
+# coding=gbk
+
 import os
 import rospy
 import time
 import sys
-import math
 import serial
-import string
-import ctypes
+
 
 #class queue is design for uart receive data cache
 class queue:
@@ -45,15 +46,12 @@ class queue:
         return (self.rear - self.front + self.capacity) % self.capacity
 
 
-def crc_byte(self,data,length):
-    ret = 0
-    for i in range(length):
-        ret = self.crc_1byte(ret^data[i])
-    return ret    
+def crc_byte(data,length):
+    pass
 
 
 Circleloop = queue(capacity = 1024*4)
-def timerCommunicationCB():
+def timerCommunicationCB(event):
     length = serial.in_waiting
     if length:
         reading = serial.read_all()
@@ -95,7 +93,7 @@ def timerCommunicationCB():
         pass
 
 
-def timerOdomCB():
+def timerOdomCB(event):
     #Get move base velocity data
     output = chr(0x5a) + chr(0x06) + chr(0x01) + chr(0x11) + chr(0x00) + chr(0xa2) 
     try:
@@ -111,7 +109,7 @@ def timerOdomCB():
 #main function
 if __name__=="__main__":
     # Serial Communication
-    device_port = '/dev/ttyUSB0'
+    device_port = '/dev/ttyTHS1'
     baudrate = 115200
     try:
         serial = serial.Serial(device_port, baudrate, timeout=10)
@@ -124,10 +122,10 @@ if __name__=="__main__":
             pass
     except:
         rospy.logerr("Can not open Serial"+ device_port)
-        serial.close
+        # serial.close
         sys.exit(0)
     rospy.loginfo("Serial Open Succeed")
-
+        
     try:
         rospy.init_node('base_control',anonymous=True)
         timer_odom = rospy.Timer(rospy.Duration(1.0/50), timerOdomCB)

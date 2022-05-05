@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+
+<launch>
+
+    <node name="base_control"   pkg="base_control"  type="serial_test.py" output="screen" />
+
+</launch>
