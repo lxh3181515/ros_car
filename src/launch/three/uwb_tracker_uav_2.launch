@@ -1,0 +1,37 @@
+<launch>
+<node pkg="nlink_parser" type="linktrack" name="linktrack_uav2" output="screen">
+    <param name="port_name" value="/dev/ttyUSB1" />
+    <param name="baud_rate" value="921600" />
+    <param name="SendDataMsgTopic" value="/uwb2/msg_to_other"/>
+    <param name="RecvDataMsgTopic" value="/uwb2/msg_from_other"/>
+    <param name="NlinkLinktrackNodeFrameTopic" value="/uwb2/nlink_linktrack_nodeframe2"/> 
+   
+    <param name="NlinkLinktrackNodeframe0Topic" value="/uwb2/nlink_linktrack_nodeframe0"/>
+</node>
+<node name="velocity_control_uav2" pkg="tracker_8" type="velocity_control_follow_node" output="screen">
+      <param name="rosSubMsgName_rc" value="/mavros/rc/in"/>
+      <param name="rosSubMsgName_locpos" value ="/mavros/local_position/pose"/>
+      <param name="rosPubMsgName_tagtpos" value="/mavros/setpoint_velocity/cmd_vel_unstamped"/>
+      <param name="rosSubMsgName_refvel" value="/uav2/mavros/setpoint_velocity/cmd_vel"/>
+      <param name="cloudCommitState_topic" value="/uav2/cloud/connection/state"/>
+      <param name="rc_ref_velocity_channel" value="8"/>
+      <param name="rc_take_off_channel" value="5"/>
+      <param name="take_off_heigh" value="2"/>
+      <param name="rc_land_channel" value="9"/>
+</node>
+<node name="tracker_8_uav2" pkg="tracker_8" type="tracker_8_follow_two_node" output="screen">
+<param name="Uav2TwistSubTopic" value="/mavros/local_position/velocity_local"/>
+<param name="Uav2HeighSubTopic" value="/mavros/distance_sensor/hrlv_ez4_pub"/>
+<param name="UwbDistanceSubTopic" value="/uwb2/nlink_linktrack_nodeframe2"/>
+<param name="NlinkLinktrackNodeframe0Topic" value="/uwb2/nlink_linktrack_nodeframe0"/>
+<param name="Uav0PhiSubTopic" value="/uav0_phi"/>
+<param name="Uav1PhiSubTopic" value="/uav1_phi"/>
+<param name="Uav1EstSubTopic" value="/uav1_est"/>
+<param name="Uav2SetVelPubTopic" value="/uav2/mavros/setpoint_velocity/cmd_vel"/>
+</node>
+
+<include file="$(find mavros)/launch/px4.launch">
+</include>
+
+
+</launch>

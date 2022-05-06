@@ -1,0 +1,7 @@
+<launch>
+<node name="tracker_8_master" pkg="tracker_8" type="tracker_8_master_node" output="screen">
+<param name="UwbMessagePubTopic" value="/uwb0/msg_to_other"/>
+<param name="UavCurrVelTopic" value="/mavros/local_position/velocity_local"/>
+<param name="HeightTopic" value="/mavros/distance_sensor/hrlv_ez4_pub"/>
+</node>
+</launch>

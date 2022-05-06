@@ -1,0 +1,24 @@
+
+
+<launch>
+    <node pkg="nlink_parser" type="linktrack" name="linktrack0" output="screen">
+        <param name="port_name" value="/dev/ttyUSB0" />
+        <param name="baud_rate" value="921600" />
+    </node>
+
+<node name="tracker_8_follow" pkg="tracker_8" type="tracker_8_follow_node" output="screen">
+
+<param name="CarTwistSubTopic" value="/vel/info"/>
+<param name="UwbDistanceSubTopic" value="/nlink_linktrack_nodeframe2"/>
+
+<param name="CarSetVelPubTopic" value="/vel/cmd"/>
+
+</node>
+<node name="base_control_name" pkg="base_control" type="base_control_node" output="screen">
+
+
+</node>
+
+</launch>
+
+

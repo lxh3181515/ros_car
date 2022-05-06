@@ -1,0 +1,10 @@
+<launch>
+<node pkg="nlink_parser" type="linktrack" name="linktrack1" output="screen">
+    <param name="port_name" value="/dev/ttyUSB1" />
+    <param name="baud_rate" value="921600" />
+    <param name="SendDataMsgTopic" value="/uwb1/msg_to_other"/>
+    <param name="RecvDataMsgTopic" value="/uwb1/msg_from_other"/>
+    <param name="NlinkLinktrackNodeFrameTopic" value="/uwb1/nlink_linktrack_nodeframe2"/>
+    <param name="NlinkLinktrackNodeframe0Topic" value="/uwb1/nlink_linktrack_nodeframe0"/>
+</node>
+</launch>

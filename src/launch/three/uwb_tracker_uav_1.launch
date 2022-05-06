@@ -1,0 +1,41 @@
+<launch>
+<node pkg="nlink_parser" type="linktrack" name="linktrack_uav1" output="screen">
+    <param name="port_name" value="/dev/ttyUSB0" />
+    <param name="baud_rate" value="921600" />
+    <param name="SendDataMsgTopic" value="/uwb1/msg_to_other"/>
+    <param name="RecvDataMsgTopic" value="/uwb1/msg_from_other"/>
+    <param name="NlinkLinktrackNodeFrameTopic" value="/uwb1/nlink_linktrack_nodeframe2"/>
+    <param name="NlinkLinktrackNodeframe0Topic" value="/uwb1/nlink_linktrack_nodeframe0"/>
+</node>
+<node name="velocity_control_uav1" pkg="tracker_8" type="velocity_control_follow_node" output="screen">
+      <param name="rosSubMsgName_rc" value="/mavros/rc/in"/>
+      <param name="rosSubMsgName_locpos" value ="/mavros/local_position/pose"/>
+      <param name="rosPubMsgName_tagtpos" value="/mavros/setpoint_velocity/cmd_vel_unstamped"/>
+      <param name="rosSubMsgName_refvel" value="/uav1/mavros/setpoint_velocity/cmd_vel"/>
+      <param name="cloudCommitState_topic" value="/uav1/cloud/connection/state"/>
+      <param name="rc_ref_velocity_channel" value="8"/>
+      <param name="rc_take_off_channel" value="5"/>
+      <param name="take_off_heigh" value="2"/>
+      <param name="rc_land_channel" value="9"/>
+</node>
+<node name="tracker_8_uav1" pkg="tracker_8" type="tracker_8_follow_node" output="screen">
+     <param name="Uav1TwistSubTopic" value="/mavros/local_position/velocity_local"/>
+     <param name="Uav1HeighSubTopic" value="/mavros/distance_sensor/hrlv_ez4_pub"/>
+     <param name="UwbDistanceSubTopic" value="/uwb1/nlink_linktrack_nodeframe2"/>
+     <param name="NlinkLinktrackNodeframe0Topic" value="/uwb1/nlink_linktrack_nodeframe0"/>
+     <param name="Uav0PhiSubTopic" value="/uav0_phi"/>
+     <param name="Uav1SetVelPubTopic" value="/uav1/mavros/setpoint_velocity/cmd_vel"/>
+     <param name="UwbMessagePubTopic" value="/uwb1/msg_to_other"/>
+     <param name="UavCurrVelTopic" value="/mavros/local_position/velocity_local"/>
+     <param name="HeightTopic" value="/mavros/distance_sensor/hrlv_ez4_pub"/>
+</node>
+
+<include file="$(find mavros)/launch/px4.launch">
+</include> 
+<!--
+<include file="$(find PX4_Firmware)/launch/px4.launch">
+ <arg name="vehicle" value="$(arg vehicle)"/>
+ </include>
+-->
+
+</launch>

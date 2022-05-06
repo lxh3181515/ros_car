@@ -1,0 +1,13 @@
+<launch>
+<node name="velocity_control_follow" pkg="tracker_8" type="velocity_control_follow_node" output="screen">
+      <param name="rosSubMsgName_rc" value="/mavros/rc/in"/>
+      <param name="rosSubMsgName_locpos" value ="/mavros/local_position/pose"/>
+      <param name="rosPubMsgName_tagtpos" value="/mavros/setpoint_velocity/cmd_vel_unstamped"/>
+      <param name="rosSubMsgName_refvel" value="/uav1/mavros/setpoint_velocity/cmd_vel_unstamped"/>
+      <param name="cloudCommitState_topic" value="/cloud/connection/r_uav"/>
+      <param name="rc_ref_velocity_channel" value="8"/>
+      <param name="rc_take_off_channel" value="5"/>
+      <param name="take_off_heigh" value="2"/>
+      <param name="rc_land_channel" value="9"/>
+</node>
+</launch>

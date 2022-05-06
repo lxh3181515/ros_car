@@ -1,0 +1,6 @@
+<launch>
+<node name="tracker_8_follow_bridge" pkg="tracker_8" type="tracker_8_follow_bridge_node" output="screen">
+<param name="localPosePubTopic" value="/bridge/mavros/local_position/local"/>
+<param name="localPoseSubTopic" value="/mavros/local_position/local"/>
+</node>
+</launch>

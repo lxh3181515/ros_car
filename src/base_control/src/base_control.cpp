@@ -284,11 +284,11 @@ void BaseControl::ackermannCmdCB(const geometry_msgs::TwistStamped& msg)
     float theta, speed;
     theta = atan2(msg.twist.linear.y, msg.twist.linear.x) - yaw;
     speed = sqrt(pow(msg.twist.linear.x, 2) + pow(msg.twist.linear.y, 2));
-    data[0] = (int(speed * 1000.0)>>8)&0xff;
-    data[1] = int(speed * 1000.0)&0xff;
+    data[0] = (short(speed * 1000.0)>>8)&0xff;
+    data[1] = short(speed * 1000.0)&0xff;
     data[2] = data[3] = 0;
-    data[4] = (int(theta * 1000.0)>>8)&0xff;
-    data[5] = int(theta * 1000.0)&0xff;
+    data[4] = (short(theta * 1000.0)>>8)&0xff;
+    data[5] = short(theta * 1000.0)&0xff;
 
     while (serialIDLE_flag)
     {

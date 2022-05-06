@@ -1,0 +1,13 @@
+<launch>
+<node name="tracker_8_follow" pkg="tracker_8" type="tracker_8_follow_node" output="screen">
+<param name="Uav1TwistSubTopic" value="/mavros/local_position/pose"/>
+<param name="Uav1HeighSubTopic" value="/mavros/distance_sensor/hrlv_ez4_pub"/>
+<param name="UwbDistanceSubTopic" value="/nlink_linktrack_nodeframe2"/>
+<param name="NlinkLinktrackNodeframe0Topic" value="/uwb/NlinkLinktrackNodeframe0"/>
+<param name="Uav0PhiSubTopic" value="/uav0_phi"/>
+<param name="Uav1SetVelPubTopic" value="/uav1/mavros/setpoint_velocity/cmd_vel">
+<param name="UwbMessagePubTopic" value="/uwb1/msg_to_other"/>
+<param name="UavCurrVelTopic" value="/mavros/local_position/velocity_local"/>
+<param name="HeightTopic" value="/mavros/distance_sensor/hrlv_ez4_pub"/>
+</node>
+</launch>
