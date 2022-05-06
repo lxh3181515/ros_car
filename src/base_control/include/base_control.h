@@ -42,7 +42,8 @@ private:
     nav_msgs::Odometry info_odom;
     sensor_msgs::Imu info_imu_raw;
     sensor_msgs::Imu temp_info_imu_raw;
-    float yaw, temp_yaw;
+    float yaw;
+    int temp_yaw;
     serial::Serial sp;
     uint8_t serialIDLE_flag;
     queue Circleloop;

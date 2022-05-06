@@ -162,24 +162,24 @@ void BaseControl::timerCommunicationCB(const TimerEvent& event)
                 // function code
                 if (databuf[3] == FC_REP_IMU)
                 {
-                    temp_info_imu_raw.angular_velocity.x = (((databuf[4]&0xff)<<24)|((databuf[5]&0xff)<<16)|((databuf[6]&0xff)<<8)|(databuf[7]&0xff));
-                    temp_info_imu_raw.angular_velocity.y = (((databuf[8]&0xff)<<24)|((databuf[9]&0xff)<<16)|((databuf[10]&0xff)<<8)|(databuf[11]&0xff));
-                    temp_info_imu_raw.angular_velocity.z = (((databuf[12]&0xff)<<24)|((databuf[13]&0xff)<<16)|((databuf[14]&0xff)<<8)|(databuf[15]&0xff));
+                    temp_info_imu_raw.angular_velocity.x = int(((databuf[4]&0xff)<<24)|((databuf[5]&0xff)<<16)|((databuf[6]&0xff)<<8)|(databuf[7]&0xff));
+                    temp_info_imu_raw.angular_velocity.y = int(((databuf[8]&0xff)<<24)|((databuf[9]&0xff)<<16)|((databuf[10]&0xff)<<8)|(databuf[11]&0xff));
+                    temp_info_imu_raw.angular_velocity.z = int(((databuf[12]&0xff)<<24)|((databuf[13]&0xff)<<16)|((databuf[14]&0xff)<<8)|(databuf[15]&0xff));
                     
-                    temp_info_imu_raw.linear_acceleration.x = (((databuf[16]&0xff)<<24)|((databuf[17]&0xff)<<16)|((databuf[18]&0xff)<<8)|(databuf[19]&0xff));
-                    temp_info_imu_raw.linear_acceleration.y = (((databuf[20]&0xff)<<24)|((databuf[21]&0xff)<<16)|((databuf[22]&0xff)<<8)|(databuf[23]&0xff));
-                    temp_info_imu_raw.linear_acceleration.z = (((databuf[24]&0xff)<<24)|((databuf[25]&0xff)<<16)|((databuf[26]&0xff)<<8)|(databuf[27]&0xff));
+                    temp_info_imu_raw.linear_acceleration.x = int(((databuf[16]&0xff)<<24)|((databuf[17]&0xff)<<16)|((databuf[18]&0xff)<<8)|(databuf[19]&0xff));
+                    temp_info_imu_raw.linear_acceleration.y = int(((databuf[20]&0xff)<<24)|((databuf[21]&0xff)<<16)|((databuf[22]&0xff)<<8)|(databuf[23]&0xff));
+                    temp_info_imu_raw.linear_acceleration.z = int(((databuf[24]&0xff)<<24)|((databuf[25]&0xff)<<16)|((databuf[26]&0xff)<<8)|(databuf[27]&0xff));
                     
-                    temp_info_imu_raw.orientation.x = ((databuf[28]&0xff)<<8|databuf[29]);
-                    temp_info_imu_raw.orientation.y = ((databuf[30]&0xff)<<8|databuf[31]);
-                    temp_info_imu_raw.orientation.z = ((databuf[32]&0xff)<<8|databuf[33]);
-                    temp_info_imu_raw.orientation.w = ((databuf[34]&0xff)<<8|databuf[35]);
+                    temp_info_imu_raw.orientation.x = int((databuf[28]&0xff)<<8|databuf[29]);
+                    temp_info_imu_raw.orientation.y = int((databuf[30]&0xff)<<8|databuf[31]);
+                    temp_info_imu_raw.orientation.z = int((databuf[32]&0xff)<<8|databuf[33]);
+                    temp_info_imu_raw.orientation.w = int((databuf[34]&0xff)<<8|databuf[35]);
                 } else if (databuf[3] == FC_REP_ODOM_EX)
                 {
-                    temp_info_vel_ack.linear.x = ((databuf[4]&0xff)<<8|databuf[5]);
-                    temp_info_vel_ack.linear.y = ((databuf[6]&0xff)<<8|databuf[7]);
-                    temp_yaw = ((databuf[8]&0xff)<<8|databuf[9]);
-                    temp_info_vel_ack.angular.z = ((databuf[10]&0xff)<<8|databuf[11]);
+                    temp_info_vel_ack.linear.x = short((databuf[4]&0xff)<<8|databuf[5]);
+                    temp_info_vel_ack.linear.y = short((databuf[6]&0xff)<<8|databuf[7]);
+                    temp_yaw = short((databuf[8]&0xff)<<8|databuf[9]);
+                    temp_info_vel_ack.angular.z = short((databuf[10]&0xff)<<8|databuf[11]);
                 } else if (databuf[3] == FC_REP_SET_VEL)
                 {
                     ROS_WARN("velocity set failed!");
