@@ -13,7 +13,6 @@
 #include "tf/transform_broadcaster.h"
 
 using namespace ros;
-using namespace std_msgs;
 
 #define PI 3.14159265
 
@@ -29,9 +28,10 @@ private:
     uint32_t baudrate;
     uint16_t odom_freq;
     uint16_t imu_freq;
-    Publisher odom_topic;
-    Publisher vel_ack_topic;
-    Publisher imu_topic;
+    Publisher odom_pub;
+    Publisher vel_ack_pub;
+    Publisher imu_pub;
+    Subscriber vel_ack_sub;
 
     // define param
     Time current_time = Time::now();
@@ -61,6 +61,7 @@ public:
     void timerCommunicationCB(const TimerEvent& event);
     void timerOdomCB(const TimerEvent& event);
     void timerIMUCB(const TimerEvent& event);
+    void ackermannCmdCB(const geometry_msgs::TwistStamped& msg);
 
     void getInfo();
 };

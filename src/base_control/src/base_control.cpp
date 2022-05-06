@@ -4,8 +4,10 @@
 BaseControl::BaseControl(NodeHandle n)
 {
     /* topic init */
-    odom_topic = n.advertise<nav_msgs::Odometry>("/odom", 10);
-    imu_topic = n.advertise<sensor_msgs::Imu>("/imu", 10);
+    odom_pub = n.advertise<nav_msgs::Odometry>("/odom", 10);
+    imu_pub = n.advertise<sensor_msgs::Imu>("/imu", 10);
+    vel_ack_pub = n.advertise<geometry_msgs::TwistStamped>("/vel/info", 10);
+    vel_ack_sub = n.subscribe("/vel/cmd", 20, &BaseControl::ackermannCmdCB, this);
     /* serial init */
     ID = 0x01;
     device_port = "/dev/ttyTHS1";
@@ -207,21 +209,30 @@ void BaseControl::timerOdomCB(const TimerEvent& event)
 
     /* publish odom data */
     tf::Transform trans;
+    geometry_msgs::TwistStamped twist;
+
     current_time = Time::now();Duration(0.01).sleep();
     double dt = (current_time - previous_time).toSec();
     previous_time = current_time;
+    twist.header.seq = 50;
+    twist.header.frame_id = odomID;
+    twist.header.stamp = current_time;
     info_odom.header.stamp = current_time;
     info_odom.header.frame_id = odomID;
     info_odom.child_frame_id = baseID;
-
+    
     // cal odom data
     info_vel_ack.linear.x = temp_info_vel_ack.linear.x / 1000.0;
     info_vel_ack.linear.y = temp_info_vel_ack.linear.y / 1000.0;
     info_vel_ack.angular.z = temp_info_vel_ack.angular.z / 1000.0;
     yaw = temp_yaw * PI / 18000.0;
 
-    info_odom.pose.pose.position.x += info_vel_ack.linear.x * cos(yaw) * dt - info_vel_ack.linear.y * sin(yaw) * dt;
-    info_odom.pose.pose.position.y += info_vel_ack.linear.x * sin(yaw) * dt + info_vel_ack.linear.y * cos(yaw) * dt;
+    twist.twist.linear.x = info_vel_ack.linear.x * cos(yaw) * dt - info_vel_ack.linear.y * sin(yaw) * dt;
+    twist.twist.linear.y = info_vel_ack.linear.x * sin(yaw) * dt + info_vel_ack.linear.y * cos(yaw) * dt;
+    vel_ack_pub.publish(twist);
+
+    info_odom.pose.pose.position.x += twist.twist.linear.x;
+    info_odom.pose.pose.position.y += twist.twist.linear.y;
     info_odom.pose.pose.position.z = 0;
     trans.setOrigin(tf::Vector3(info_odom.pose.pose.position.x, info_odom.pose.pose.position.y, 0));
 
@@ -232,7 +243,7 @@ void BaseControl::timerOdomCB(const TimerEvent& event)
     info_odom.twist.twist.linear.y = info_vel_ack.linear.y;
     info_odom.twist.twist.angular.z = info_vel_ack.angular.z;
 
-    odom_topic.publish(info_odom);
+    odom_pub.publish(info_odom);
     tf_broadcaster.sendTransform(tf::StampedTransform(trans, current_time, baseID, odomID));
 }
 
@@ -262,6 +273,28 @@ void BaseControl::timerIMUCB(const TimerEvent& event)
     current_time = Time::now();
     info_imu_raw.header.stamp = current_time;
     info_imu_raw.header.frame_id = imuID;
-    imu_topic.publish(info_imu_raw);
+    imu_pub.publish(info_imu_raw);
     tf_broadcaster.sendTransform(tf::StampedTransform(tf::Transform(tf::Quaternion(0.0, 0.0, 0.0, 1.0), tf::Vector3(0.0, 0.0, 0.09)), current_time, imuID, baseID));
+}
+
+
+void BaseControl::ackermannCmdCB(const geometry_msgs::TwistStamped& msg)
+{
+    uint8_t data[6];
+    float theta, speed;
+    theta = atan2(msg.twist.linear.y, msg.twist.linear.x) - yaw;
+    speed = sqrt(pow(msg.twist.linear.x, 2) + pow(msg.twist.linear.y, 2));
+    data[0] = (int(speed * 1000.0)>>8)&0xff;
+    data[1] = int(speed * 1000.0)&0xff;
+    data[2] = data[3] = 0;
+    data[4] = (int(theta * 1000.0)>>8)&0xff;
+    data[5] = int(theta * 1000.0)&0xff;
+
+    while (serialIDLE_flag)
+    {
+        Duration(0.01).sleep();
+    }
+    serialIDLE_flag = 4;
+    serialSend(FC_SET_ACK_VEL, data, 6);
+    serialIDLE_flag = 0;
 }
