@@ -251,6 +251,7 @@ void BaseControl::timerOdomCB(const TimerEvent& event)
 
     // pub path
     info_path.header = header;
+    info_path.header.frame_id = baseID;
     geometry_msgs::PoseStamped this_pose_stamped;
     this_pose_stamped.header = header;
     this_pose_stamped.pose.position = info_odom.pose.pose.position;
