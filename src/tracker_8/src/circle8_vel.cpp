@@ -89,7 +89,7 @@ void circle8_vel::uwb_distance_callback(const nlink_parser::LinktrackNodeframe2:
         {
             for(int i= 0;i<msg.get()->nodes.size();i++)
             {
-                if(msg.get()->nodes.at(i).id == 3)
+                if(msg.get()->nodes.at(i).id == 0)
                 {
                     distance.at(1) =(msg.get()->nodes.at(i).dis);
                     
@@ -97,8 +97,8 @@ void circle8_vel::uwb_distance_callback(const nlink_parser::LinktrackNodeframe2:
                     if(is_uav1_data_ok)
     {
    // ROS_INFO("come in1");
-    // UAV0_phi_x=0;
-    // UAV0_phi_y=0;
+     UAV0_phi_x=0;
+     UAV0_phi_y=0;
     // UAV_0_high_sensor_value = 0;
     
         Eigen:: Matrix<double, 2, 1>  v_est(0.0,0.0);
@@ -130,7 +130,7 @@ void circle8_vel::uwb_distance_callback(const nlink_parser::LinktrackNodeframe2:
         //phi_xy(1,0)=(UAV1_y.back()-UAV1_y.front())-(UAV0_phi_y);
         phi_xy(0,0)=car_phi_x;
         phi_xy(1,0)=car_phi_y;
-
+ROS_INFO("vel_get_seccess%f,%f",phi_xy(0,0) ,phi_xy(1,0) );
         // if (phi_xy(0,0)==0)
         // { phi_xy(0,0)=0.00001;
         //     phi_xy(1,0)=0.00001;
@@ -181,7 +181,8 @@ void circle8_vel::uwb_distance_callback(const nlink_parser::LinktrackNodeframe2:
         geometry_msgs::TwistStamped vel1;
         vel1.twist.linear.x=ref_velocity_x ;
         vel1.twist.linear.y=ref_velocity_y ;
-        vel1.twist.linear.z=ref_velocity_z ;
+        //vel1.twist.linear.z=ref_velocity_z ;
+ROS_INFO("vel_seccess%f,%f",ref_velocity_x ,ref_velocity_y );
         carSetVelPub.publish(vel1);
 
         // std_msgs::String commitPubMsg;

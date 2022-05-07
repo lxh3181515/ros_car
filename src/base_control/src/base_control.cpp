@@ -4,10 +4,10 @@
 BaseControl::BaseControl(NodeHandle n)
 {
     /* topic init */
-    odom_pub = n.advertise<nav_msgs::Odometry>("/odom", 10);
-    imu_pub = n.advertise<sensor_msgs::Imu>("/imu", 10);
-    vel_ack_pub = n.advertise<geometry_msgs::TwistStamped>("/vel/info", 10);
-    vel_ack_sub = n.subscribe("/vel/cmd", 20, &BaseControl::ackermannCmdCB, this);
+    odom_pub = n.advertise<nav_msgs::Odometry>("/odom", 1);
+    imu_pub = n.advertise<sensor_msgs::Imu>("/imu", 1);
+    vel_ack_pub = n.advertise<geometry_msgs::TwistStamped>("/vel/info", 1);
+    vel_ack_sub = n.subscribe("/vel/cmd", 1, &BaseControl::ackermannCmdCB, this);
     /* serial init */
     ID = 0x01;
     device_port = "/dev/ttyTHS1";
