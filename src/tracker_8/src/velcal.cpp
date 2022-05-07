@@ -52,11 +52,11 @@ Eigen::Matrix<double,2,4>   velcal(  Eigen::Matrix<double,2,2>  bgamak,Eigen::Ma
         //double Gama = 2.0;
        // double v=1.5743;
         double pi=3.1415926;
-         double U=0.45;
-         double B=5.5;
+         double U=0.25;
+         double B=2.5;
          //double tau=0.096;
-         float  gamaf=0.95;
-         double mu=0.95;
+         float  gamaf=0.99;
+         double mu=0.13;
          Eigen::Matrix<double,2,2> eye;
          eye << 1,0,0,1;
          Eigen::Matrix<double,2,2> bgamak1;
@@ -88,7 +88,7 @@ Eigen::Matrix<double,2,4>   velcal(  Eigen::Matrix<double,2,2>  bgamak,Eigen::Ma
          //detasigma(0,0)= r*(1.5*sin(k*pi/48.0)-1.5*sin((k-1.0)*pi/48.0));
          //detasigma(1,0)= r*(-1.5*(3.0*sin(k*pi/24.0))/4.0+1.5*(3.0*sin((k-1.0)*pi/24.0))/4.0);
         // Eigen::Matrix<double,2,1>  u_est = - B*(q_est- qS1 - 0.5*sigma)-0.1*(q_est_old-q_est);
-Eigen::Matrix<double,2,1>  u_est = - B*(q_est );
+Eigen::Matrix<double,2,1>  u_est = - B*(q_est  - 0.00005*sigma);
          //ROS_INFO("计算detasigma%f,%f",detasigma(0,0),detasigma(1,0));
           Eigen::Matrix<double,2,1> u_op=u_est*U/(max(U,u_est.norm())) ;
         //   ROS_INFO("估计位置%f,%f",q_est(0,0),q_est(0,1));
