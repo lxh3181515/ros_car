@@ -11,6 +11,7 @@
 #include "nav_msgs/Odometry.h"
 #include "tf/tf.h"
 #include "tf/transform_broadcaster.h"
+#include "nav_msgs/Path.h"
 
 using namespace ros;
 
@@ -29,16 +30,18 @@ private:
     uint16_t odom_freq;
     uint16_t imu_freq;
     Publisher odom_pub;
+    Publisher path_pub;
     Publisher vel_ack_pub;
     Publisher imu_pub;
     Subscriber vel_ack_sub;
 
     // define param
-    Time current_time = Time::now();
-    Time previous_time = current_time;
+    Time current_time;
+    Time previous_time;
     geometry_msgs::Twist info_vel_ack;
     geometry_msgs::Twist temp_info_vel_ack;
     geometry_msgs::Twist cmd_vel_ack;
+    nav_msgs::Path info_path;
     nav_msgs::Odometry info_odom;
     sensor_msgs::Imu info_imu_raw;
     sensor_msgs::Imu temp_info_imu_raw;
