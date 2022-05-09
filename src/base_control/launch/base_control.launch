@@ -2,6 +2,14 @@
 
 <launch>
 
-    <node name="base_control"   pkg="base_control"  type="serial_test.py" output="screen" />
+    <node name="base_control"   pkg="base_control"  type="base_control_node" output="screen">
+        <param name="baudrate"  type="int"   value="115200"/>  
+        <param name="odom_freq" type="int"   value="50"/>  
+        <param name="imu_freq"  type="int"   value="50"/>  
+        <param name="port"                   value='/dev/ttyTHS1'/>  
+        <param name="base_id"                value="base"/>
+        <param name="odom_id"                value="odom"/>
+        <param name="imu_id"                 value="imu"/> 
+    </node>
 
 </launch>

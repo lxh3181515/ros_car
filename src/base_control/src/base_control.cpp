@@ -3,6 +3,23 @@
 
 BaseControl::BaseControl(NodeHandle n)
 {
+    /* set param */
+    ID = 0x01;
+    serialIDLE_flag = 0;
+    // device_port = "/dev/ttyTHS1";
+    // baudrate = 115200;
+    // odom_freq = 50;
+    // imu_freq = 50;
+    // odomID = "odom";
+    // baseID = "base";
+    // imuID = "imu";
+    param::get("baudrate", baudrate);
+    param::get("odom_freq", odom_freq);
+    param::get("imu_freq", imu_freq);
+    param::get("port", device_port);
+    param::get("base_id", baseID);
+    param::get("odom_id", odomID);
+    param::get("imu_id", imuID);
     /* topic init */
     odom_pub = n.advertise<nav_msgs::Odometry>("/odom", 1);
     path_pub = n.advertise<nav_msgs::Path>("/path", 1);
@@ -10,9 +27,6 @@ BaseControl::BaseControl(NodeHandle n)
     vel_ack_pub = n.advertise<geometry_msgs::TwistStamped>("/vel/info", 1);
     vel_ack_sub = n.subscribe("/vel/cmd", 1, &BaseControl::ackermannCmdCB, this);
     /* serial init */
-    ID = 0x01;
-    device_port = "/dev/ttyTHS1";
-    baudrate = 115200;
     serial::Timeout to = serial::Timeout::simpleTimeout(10);
     sp.setPort(device_port);
     sp.setBaudrate(baudrate);
@@ -28,13 +42,6 @@ BaseControl::BaseControl(NodeHandle n)
         return;
     }
     ROS_INFO("Serial Open Succeed %s", device_port.c_str());
-    /* others init */
-    odom_freq = 50;
-    imu_freq = 50;
-    odomID = "odom";
-    baseID = "base";
-    imuID = "imu";
-    serialIDLE_flag = 0;
     /* timer init */
     timer_communication = n.createTimer(Duration(1.0/500), &BaseControl::timerCommunicationCB, this);
     timer_odom = n.createTimer(Duration(1.0/odom_freq), &BaseControl::timerOdomCB, this);

@@ -26,9 +26,9 @@ private:
     std::string baseID;
     std::string imuID;
     std::string device_port;
-    uint32_t baudrate;
-    uint16_t odom_freq;
-    uint16_t imu_freq;
+    int baudrate;
+    int odom_freq;
+    int imu_freq;
     Publisher odom_pub;
     Publisher path_pub;
     Publisher vel_ack_pub;
